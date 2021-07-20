@@ -1,5 +1,5 @@
 
--- 1. Добавить неоюходимые внешние ключи для всех таблиц базы данных vk (приложить команды)
+-- 1
 
 USE vk;
 
@@ -32,7 +32,6 @@ ALTER TABLE friendship
 			ON DELETE CASCADE
 			ON UPDATE CASCADE;
 
--- Здесь возможны варианты, если нет ограничения на пустое значение то можно сделать SET NULL		
 ALTER TABLE likes
 	ADD CONSTRAINT likes_user_id_fk
 		FOREIGN KEY (user_id) REFERENCES users(id)
@@ -53,10 +52,6 @@ ALTER TABLE media
 			ON DELETE CASCADE
 			ON UPDATE CASCADE;
 		
-/* Оставил возможность видеть сообщения удалённых пользователей,
- * Но есть момент: надо опеределиться на каком слое приложения должны удалаться 
- * сообщения где и получатель и отправитель NULL
- */
 ALTER TABLE messages
 	ADD CONSTRAINT messages_from_user_id_fk
 		FOREIGN KEY (from_user_id) REFERENCES users(id)
@@ -67,9 +62,8 @@ ALTER TABLE messages
 			ON DELETE SET NULL
 			ON UPDATE CASCADE;		
 
-#
-# 2
-#
+-- 2
+
 
 SELECT count(*) mess, friend FROM 
 	(SELECT body, to_user_id AS friend FROM messages WHERE from_user_id = 1
@@ -81,8 +75,7 @@ ORDER BY mess DESC
 LIMIT 1
 ;
 
-
--- 3) Подсчитать общее количество лайков, которые получили 10 самых молодых пользователей.
+--3
 WITH YU AS -- Young Users 
 (
 	SELECT id FROM users U
@@ -105,14 +98,13 @@ FROM likes L
 	INNER JOIN YU ON YU.id in (YUU.id, MD.user_id, MS.from_user_id) 
 
 
--- 4) Определить кто больше поставил лайков (всего) - мужчины или женщины?
+-- 4
 SELECT COUNT(*) AS likes, sex FROM likes, profiles
 WHERE likes.from_user_id = profiles.user_id
 GROUP BY sex;
 
 
--- 5) Найти 10 пользователей, которые проявляют наименьшую активность в использовании социальной сети.
-
+-- 5
 WITH T AS (
 	SELECT from_user_id as user_id, COUNT(*) as rnk  FROM messages -- Неактивные пользователи мало отправляют сообщения
 	GROUP BY from_user_id
